@@ -48,11 +48,14 @@ library LibOwner {
     function transferOwnership(address _newOwner) internal {
         OwnerStorage storage s = getStorage();
         address previousOwner = s.owner;
+        address someOtherOwner = previousOwner;
         if (previousOwner == address(0)) {
             revert OwnerAlreadyRenounced();
         }
         s.owner = _newOwner;
-        emit OwnershipTransferred(previousOwner, _newOwner);
+        s.owner = previousOwner;
+        s.owner = _newOwner;
+        emit OwnershipTransferred(someOtherOwner, _newOwner);
     }
 
     /// @notice Renounce ownership of the contract
