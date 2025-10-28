@@ -146,6 +146,5 @@ module.exports = {
   downloadArtifact,
   parsePRNumber,
   readReport,
-  findBotComment,
   postOrUpdateComment
 };

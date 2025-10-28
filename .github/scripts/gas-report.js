@@ -144,7 +144,7 @@ function generateFooter(shortSha, fullCommitSha) {
  * Generate "no changes" report
  */
 function generateNoChangesReport(baseBranch, headBranch, shortSha, fullCommitSha) {
-  return `## 📊 Gas Report
+  return `## Gas Report
 
 No gas usage changes detected between \`${baseBranch}\` and \`${headBranch}\`.
 
@@ -203,7 +203,7 @@ function generateFullReport(diffOutput, prInfo = {}) {
   const summary = generateSummary(changes);
   const table = generateMarkdownTable(changes);
 
-  return `## 📊 Gas Report
+  return `## Gas Report
 
 Comparing gas usage between \`${baseBranch}\` and \`${headBranch}\`
 
@@ -272,5 +272,3 @@ if (require.main === module) {
     process.exit(1);
   }
 }
-
-// No exports needed - this is only used as a CLI script
