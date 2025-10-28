@@ -17,32 +17,38 @@ function parseGasDiff(diffOutput) {
   const lines = diffOutput.split('\n').filter(line => line.trim());
   const changes = [];
 
-  for (const line of lines) {
-    // Parse lines that look like:
-    // +ContractName:testFunctionName() (gas: 12345)
-    // -ContractName:testFunctionName() (gas: 12345)
-    const changeMatch = line.match(/^([+-])([^:]+):([^(]+)\(\).*?(\d+)\s*$/);
-    if (changeMatch) {
-      const [, sign, contract, func, newGas] = changeMatch;
+  console.log('Parsing gas diff output, total lines:', lines.length);
 
-      // Try to extract the old gas value from the context
-      const oldGasMatch = line.match(/(\d+)\s*->\s*(\d+)/);
-      let oldGas = null;
-      if (oldGasMatch) {
-        oldGas = oldGasMatch[1];
-      }
+  for (const line of lines) {
+    // Skip lines until we find the actual diff output
+    // Look for lines like: test_FunctionName() (gas: -123 (-1.23%))
+    // or: testFuzz_Name(params) (gas: 456 (4.56%))
+    const trimmedLine = line.trim();
+
+    // Match function name followed by (gas: change (percentage))
+    const changeMatch = trimmedLine.match(/^([\w_]+)\([^)]*\)\s+\(gas:\s*([-+]?\d+)\s+\([^)]+\)\)/);
+
+    if (changeMatch) {
+      const [, funcName, gasChangeStr] = changeMatch;
+      const gasChange = parseInt(gasChangeStr);
+
+      // Skip zero changes
+      if (gasChange === 0) continue;
+
+      console.log(`Found change: ${funcName} -> ${gasChange}`);
 
       changes.push({
-        type: sign === '+' ? 'regression' : 'improvement',
-        contract: contract.trim(),
-        function: func.trim(),
-        oldGas: oldGas ? parseInt(oldGas) : null,
-        newGas: parseInt(newGas),
-        gasChange: oldGas ? parseInt(newGas) - parseInt(oldGas) : parseInt(newGas)
+        type: gasChange < 0 ? 'improvement' : 'regression',
+        contract: 'Test', // We don't have contract names in this format
+        function: funcName,
+        oldGas: null, // We don't have old value
+        newGas: null, // We don't have new value
+        gasChange: gasChange
       });
     }
   }
 
+  console.log('Total changes found:', changes.length);
   return changes;
 }
 
@@ -82,12 +88,12 @@ function generateMarkdownTable(changes, limit = 20) {
   for (const change of displayChanges) {
     const icon = change.type === 'improvement' ? '🟢' : '🔴';
     const sign = change.gasChange > 0 ? '+' : '';
-    const before = change.oldGas ? formatGasValue(change.oldGas) : 'New';
-    const after = formatGasValue(change.newGas);
     const diff = `${icon} ${sign}${formatGasValue(change.gasChange)}`;
-    const percentage = change.oldGas ? ` (${calculatePercentageChange(change.oldGas, change.newGas)})` : '';
+    // Since we don't have old/new values in the new format, show N/A
+    const before = change.oldGas ? formatGasValue(change.oldGas) : 'N/A';
+    const after = change.newGas ? formatGasValue(change.newGas) : 'N/A';
 
-    table += `| ${change.contract} | ${change.function}() | ${before} | ${after} | ${diff}${percentage} |\n`;
+    table += `| ${change.contract} | ${change.function}() | ${before} | ${after} | ${diff} |\n`;
   }
 
   if (changes.length > limit) {
