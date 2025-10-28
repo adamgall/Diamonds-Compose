@@ -158,7 +158,7 @@ All functions maintain the same gas costs. ✅
   if (changes.length === 0) {
     return `## Gas Report
 
-No gas usage changes detected between \`${baseBranch}\` and \`${headBranch}\`${commitDisplay}.
+No gas usage changes detected between \`${baseBranch}\` and \`${headBranch}\`.
 
 All functions maintain the same gas costs. ✅
 
