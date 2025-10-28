@@ -97,16 +97,43 @@ function readReport(reportFileName) {
  */
 async function findBotComment(github, context, prNumber, commentMarker) {
   console.log('Checking for existing comments...');
+  console.log(`Looking for comments with marker: "${commentMarker}"`);
+
   const { data: comments } = await github.rest.issues.listComments({
     owner: context.repo.owner,
     repo: context.repo.repo,
     issue_number: prNumber,
   });
 
-  return comments.find(comment =>
-    comment.user.type === 'Bot' &&
-    comment.body.includes(commentMarker)
-  );
+  console.log(`Found ${comments.length} total comments on PR #${prNumber}`);
+
+  // Debug each comment
+  comments.forEach((comment, index) => {
+    console.log(`Comment ${index + 1}:`);
+    console.log(`  - User login: ${comment.user.login}`);
+    console.log(`  - User type: ${comment.user.type || 'undefined'}`);
+    console.log(`  - Is [bot] account: ${comment.user.login.includes('[bot]')}`);
+    console.log(`  - Body preview: ${comment.body.substring(0, 100)}...`);
+    console.log(`  - Contains marker "${commentMarker}": ${comment.body.includes(commentMarker)}`);
+  });
+
+  const botComment = comments.find(comment => {
+    // GitHub Actions bot might be identified by login name, not just type
+    const isBot = comment.user.type === 'Bot' ||
+                  comment.user.login === 'github-actions[bot]' ||
+                  comment.user.login.includes('[bot]');
+    const hasMarker = comment.body.includes(commentMarker);
+    console.log(`Checking comment by ${comment.user.login}: isBot=${isBot}, hasMarker=${hasMarker}`);
+    return isBot && hasMarker;
+  });
+
+  if (botComment) {
+    console.log(`Found existing bot comment with ID: ${botComment.id}`);
+  } else {
+    console.log('No existing bot comment found with the specified marker');
+  }
+
+  return botComment;
 }
 
 /**
