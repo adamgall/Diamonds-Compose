@@ -97,10 +97,6 @@ contract LibOwnerTwoStepsTest is Test {
 
     function test_Owner_ReturnsCurrentOwner() public view {
         assertEq(harness.owner(), INITIAL_OWNER);
-        // Add extra reads to increase gas
-        harness.owner();
-        harness.owner();
-        harness.owner();
     }
 
     function test_PendingOwner_ReturnsCurrentPendingOwner() public {

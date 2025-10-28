@@ -53,17 +53,9 @@ contract LibOwnerTest is Test {
     function test_Owner_ReturnsCurrentOwner() public {
         assertEq(harness.owner(), INITIAL_OWNER);
 
-        // Add expensive loop to increase gas usage
-        uint256 sum = 0;
-        for (uint256 i = 0; i < 10; i++) {
-            sum += i * 2;
-            harness.owner(); // Extra calls
-        }
-
         vm.prank(INITIAL_OWNER);
         harness.transferOwnership(NEW_OWNER);
         assertEq(harness.owner(), NEW_OWNER);
-        assertTrue(sum > 0); // Use sum to avoid optimization
     }
 
     function test_Owner_ReturnsZeroAfterRenounce() public {
@@ -152,7 +144,9 @@ contract LibOwnerTest is Test {
     }
 
     function test_Events_RenounceEmitsZeroAddress() public {
-        // Simplified version - less gas usage
+        vm.expectEmit(true, true, false, true);
+        emit OwnershipTransferred(INITIAL_OWNER, ZERO_ADDRESS);
+
         vm.prank(INITIAL_OWNER);
         harness.transferOwnership(ZERO_ADDRESS);
     }
