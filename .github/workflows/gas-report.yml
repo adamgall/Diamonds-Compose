@@ -35,12 +35,18 @@ jobs:
           submodules: recursive
 
       - name: Generate gas snapshot for base
-        run: forge snapshot --snap .gas-snapshot-base
+        run: |
+          forge snapshot --snap .gas-snapshot-base
+          # Copy base snapshot to temp location so it survives checkout
+          cp .gas-snapshot-base /tmp/gas-snapshot-base
 
       - name: Checkout PR branch again
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Restore base snapshot
+        run: cp /tmp/gas-snapshot-base .gas-snapshot-base
 
       - name: Generate gas report
         env:
