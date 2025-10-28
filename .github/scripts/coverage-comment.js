@@ -117,38 +117,8 @@ function generateCoverageReport(metrics, commitInfo = {}) {
     `*Last updated: ${timestamp}*${commitLink}\n`;
 }
 
-/**
- * Main function to post coverage comment
- * @param {object} github - GitHub API object
- * @param {object} context - GitHub Actions context
- */
-async function postCoverageComment(github, context) {
-  const file = 'lcov.info';
-
-  if (!fs.existsSync(file)) {
-    console.log('Coverage file not found.');
-    return;
-  }
-
-  const content = fs.readFileSync(file, 'utf8');
-  const metrics = parseLcovContent(content);
-
-  console.log('Coverage Metrics:');
-  console.log('- Lines:', metrics.coveredLines, '/', metrics.totalLines);
-  console.log('- Functions:', metrics.coveredFunctions, '/', metrics.totalFunctions);
-  console.log('- Branches:', metrics.coveredBranches, '/', metrics.totalBranches);
-
-  const body = generateCoverageReport(metrics);
-
-  await github.rest.issues.createComment({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    issue_number: context.issue.number,
-    body: body
-  });
-
-  console.log('Coverage comment posted successfully!');
-}
+// Note: postCoverageComment function was removed as it was dead code.
+// The actual comment posting is handled by post-coverage-comment.js
 
 /**
  * Generate coverage report and save to file (for workflow artifacts)
@@ -186,5 +156,5 @@ if (require.main === module) {
   generateCoverageFile();
 }
 
-module.exports = { postCoverageComment, generateCoverageFile };
+// No exports needed - this is only used as a CLI script
 
