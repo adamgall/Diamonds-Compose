@@ -155,6 +155,3 @@ function generateCoverageFile() {
 if (require.main === module) {
   generateCoverageFile();
 }
-
-// No exports needed - this is only used as a CLI script
-
