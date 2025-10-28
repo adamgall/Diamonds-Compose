@@ -1,6 +1,6 @@
 /**
- * Post coverage comment workflow script
- * Downloads coverage artifact from a workflow run and posts/updates PR comment
+ * Post gas report comment workflow script
+ * Downloads gas report artifact from a workflow run and posts/updates PR comment
  *
  * This script is designed to run in a workflow_run triggered workflow
  * with proper permissions to comment on PRs from forks.
@@ -14,29 +14,27 @@ const {
 } = require('./workflow-utils');
 
 module.exports = async ({ github, context }) => {
-  console.log('Starting coverage comment posting process...');
+  console.log('Starting gas report comment posting process...');
 
   // Download and extract artifact
-  const artifactFound = await downloadArtifact(github, context, 'coverage-data');
+  const artifactFound = await downloadArtifact(github, context, 'gas-report-data');
   if (!artifactFound) {
     return;
   }
 
   // Parse PR number from data file
-  const prNumber = parsePRNumber('coverage-data.txt');
+  const prNumber = parsePRNumber('gas-report-data.txt');
   if (!prNumber) {
     return;
   }
 
-  console.log(`Processing coverage for PR #${prNumber}`);
+  console.log(`Posting comment to PR #${prNumber}`);
 
-  // Read coverage report
-  const body = readReport('coverage-report.md');
+  // Read gas report
+  const body = readReport('gas-report.md');
   if (!body) {
     return;
   }
-
-  console.log('✓ Coverage report loaded');
 
   // Post or update comment
   await postOrUpdateComment(
@@ -44,7 +42,7 @@ module.exports = async ({ github, context }) => {
     context,
     prNumber,
     body,
-    '## Coverage Report',
-    'coverage'
+    '📊 Gas Report',
+    'gas report'
   );
 };

@@ -97,6 +97,10 @@ contract LibOwnerTwoStepsTest is Test {
 
     function test_Owner_ReturnsCurrentOwner() public view {
         assertEq(harness.owner(), INITIAL_OWNER);
+        // Add extra reads to increase gas
+        harness.owner();
+        harness.owner();
+        harness.owner();
     }
 
     function test_PendingOwner_ReturnsCurrentPendingOwner() public {
@@ -433,5 +437,31 @@ contract LibOwnerTwoStepsTest is Test {
         vm.prank(owner3);
         harness.acceptOwnership();
         assertEq(harness.owner(), owner3);
+    }
+
+    // ============================================
+    // Gas Report Test Functions
+    // ============================================
+
+    function test_GasReport_TwoStepTransfer() public {
+        vm.prank(INITIAL_OWNER);
+        harness.transferOwnership(ALICE);
+
+        vm.prank(ALICE);
+        harness.acceptOwnership();
+
+        assertEq(harness.owner(), ALICE);
+    }
+
+    function test_GasReport_PendingOwnerCheck() public {
+        vm.prank(INITIAL_OWNER);
+        harness.transferOwnership(BOB);
+
+        // Multiple reads
+        for (uint256 i = 0; i < 3; i++) {
+            harness.pendingOwner();
+        }
+
+        assertEq(harness.pendingOwner(), BOB);
     }
 }

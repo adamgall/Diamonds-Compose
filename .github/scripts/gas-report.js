@@ -136,15 +136,19 @@ function generateSummary(changes) {
 function generateFullReport(diffOutput, prInfo = {}) {
   const baseBranch = prInfo.baseBranch || 'base';
   const headBranch = prInfo.headBranch || 'head';
-  const commitSha = prInfo.commitSha ? ` (${prInfo.commitSha.substring(0, 7)})` : '';
+  const fullCommitSha = prInfo.commitSha || '';
+  const shortSha = fullCommitSha ? fullCommitSha.substring(0, 7) : '';
+  const commitDisplay = shortSha ? ` (${shortSha})` : '';
 
   // Handle case with no changes
   if (!diffOutput || diffOutput.trim().length === 0) {
-    return `## 📊 Gas Report
+    return `## Gas Report
 
-No gas usage changes detected between \`${baseBranch}\` and \`${headBranch}\`${commitSha}.
+No gas usage changes detected between \`${baseBranch}\` and \`${headBranch}\`.
 
-All functions maintain the same gas costs. ✅`;
+All functions maintain the same gas costs. ✅
+
+*Last updated: ${new Date().toUTCString()}* for commit [\`${shortSha || 'unknown'}\`](https://github.com/${process.env.GITHUB_REPOSITORY || 'owner/repo'}/commit/${fullCommitSha})`;
   }
 
   // Parse and analyze changes
@@ -152,19 +156,21 @@ All functions maintain the same gas costs. ✅`;
 
   // If no changes were parsed but there was diff output, it might be an error or unrecognized format
   if (changes.length === 0) {
-    return `## 📊 Gas Report
+    return `## Gas Report
 
-No gas usage changes detected between \`${baseBranch}\` and \`${headBranch}\`${commitSha}.
+No gas usage changes detected between \`${baseBranch}\` and \`${headBranch}\`${commitDisplay}.
 
-All functions maintain the same gas costs. ✅`;
+All functions maintain the same gas costs. ✅
+
+*Last updated: ${new Date().toUTCString()}* for commit [\`${shortSha || 'unknown'}\`](https://github.com/${process.env.GITHUB_REPOSITORY || 'owner/repo'}/commit/${fullCommitSha})`;
   }
 
   const summary = generateSummary(changes);
   const table = generateMarkdownTable(changes);
 
-  return `## 📊 Gas Report
+  return `## Gas Report
 
-Comparing gas usage between \`${baseBranch}\` and \`${headBranch}\`${commitSha}
+Comparing gas usage between \`${baseBranch}\` and \`${headBranch}\`
 
 ### Summary
 - **Optimized:** ${summary.improvements} functions (🟢 -${formatGasValue(summary.totalImprovement)} gas)
@@ -202,7 +208,9 @@ git checkout main
 forge snapshot --diff .gas-snapshot
 \`\`\`
 
-</details>`;
+</details>
+
+*Last updated: ${new Date().toUTCString()}* for commit [\`${shortSha || 'unknown'}\`](https://github.com/${process.env.GITHUB_REPOSITORY || 'owner/repo'}/commit/${fullCommitSha})`;
 }
 
 /**

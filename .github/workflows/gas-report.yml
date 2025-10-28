@@ -48,6 +48,7 @@ jobs:
           BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
           HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           # Run diff and capture output
           forge snapshot --diff .gas-snapshot-base --snap .gas-snapshot-pr > gas-diff.txt 2>&1 || true

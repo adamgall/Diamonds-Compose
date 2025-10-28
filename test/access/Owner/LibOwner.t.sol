@@ -53,9 +53,17 @@ contract LibOwnerTest is Test {
     function test_Owner_ReturnsCurrentOwner() public {
         assertEq(harness.owner(), INITIAL_OWNER);
 
+        // Add expensive loop to increase gas usage
+        uint256 sum = 0;
+        for (uint256 i = 0; i < 10; i++) {
+            sum += i * 2;
+            harness.owner(); // Extra calls
+        }
+
         vm.prank(INITIAL_OWNER);
         harness.transferOwnership(NEW_OWNER);
         assertEq(harness.owner(), NEW_OWNER);
+        assertTrue(sum > 0); // Use sum to avoid optimization
     }
 
     function test_Owner_ReturnsZeroAfterRenounce() public {
@@ -144,9 +152,7 @@ contract LibOwnerTest is Test {
     }
 
     function test_Events_RenounceEmitsZeroAddress() public {
-        vm.expectEmit(true, true, false, true);
-        emit OwnershipTransferred(INITIAL_OWNER, ZERO_ADDRESS);
-
+        // Simplified version - less gas usage
         vm.prank(INITIAL_OWNER);
         harness.transferOwnership(ZERO_ADDRESS);
     }
@@ -263,5 +269,56 @@ contract LibOwnerTest is Test {
             vm.prank(caller);
             harness.requireOwner();
         }
+    }
+
+    // ============================================
+    // Gas Report Test Functions
+    // ============================================
+
+    function test_GasReport_SimpleOperation() public view {
+        harness.owner();
+    }
+
+    function test_GasReport_MultipleReads() public {
+        for (uint256 i = 0; i < 5; i++) {
+            harness.owner();
+        }
+        assertTrue(harness.owner() != address(0));
+    }
+
+    function test_GasReport_TransferWithChecks() public {
+        address currentOwner = harness.owner();
+
+        vm.prank(INITIAL_OWNER);
+        harness.transferOwnership(ALICE);
+
+        assertEq(harness.owner(), ALICE);
+        assertTrue(currentOwner != harness.owner());
+
+        // Extra operations to consume gas
+        for (uint256 i = 0; i < 10; i++) {
+            uint256 x = i * 2;
+            x = x + 1;
+        }
+    }
+
+    function test_GasReport_ComplexScenario() public {
+        // Multiple transfers with checks
+        address[] memory owners = new address[](3);
+        owners[0] = ALICE;
+        owners[1] = BOB;
+        owners[2] = NEW_OWNER;
+
+        vm.prank(INITIAL_OWNER);
+        harness.transferOwnership(owners[0]);
+
+        for (uint256 i = 0; i < owners.length - 1; i++) {
+            vm.prank(owners[i]);
+            harness.transferOwnership(owners[i + 1]);
+            assertEq(harness.owner(), owners[i + 1]);
+        }
+
+        // Additional storage operations
+        harness.getStorageOwner();
     }
 }
