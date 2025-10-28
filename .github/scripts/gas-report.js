@@ -131,6 +131,54 @@ function generateSummary(changes) {
 }
 
 /**
+ * Generate timestamp footer for reports
+ */
+function generateFooter(shortSha, fullCommitSha) {
+  const timestamp = new Date().toUTCString();
+  const repo = process.env.GITHUB_REPOSITORY || 'owner/repo';
+  const commitLink = `[\`${shortSha || 'unknown'}\`](https://github.com/${repo}/commit/${fullCommitSha})`;
+  return `*Last updated: ${timestamp}* for commit ${commitLink}`;
+}
+
+/**
+ * Generate "no changes" report
+ */
+function generateNoChangesReport(baseBranch, headBranch, shortSha, fullCommitSha) {
+  return `## 📊 Gas Report
+
+No gas usage changes detected between \`${baseBranch}\` and \`${headBranch}\`.
+
+All functions maintain the same gas costs. ✅
+
+${generateFooter(shortSha, fullCommitSha)}`;
+}
+
+/**
+ * Generate about section
+ */
+function generateAboutSection() {
+  return `<details>
+<summary>ℹ️ About this report</summary>
+
+This report compares gas usage between the base branch and this PR using \`forge snapshot\`.
+- 🟢 indicates a gas improvement (reduction)
+- 🔴 indicates a gas regression (increase)
+- Functions not shown have unchanged gas costs
+
+To run this locally:
+\`\`\`bash
+# Generate snapshot for current branch
+forge snapshot
+
+# Compare with another branch
+git checkout main
+forge snapshot --diff .gas-snapshot
+\`\`\`
+
+</details>`;
+}
+
+/**
  * Generate the full markdown report
  */
 function generateFullReport(diffOutput, prInfo = {}) {
@@ -138,17 +186,10 @@ function generateFullReport(diffOutput, prInfo = {}) {
   const headBranch = prInfo.headBranch || 'head';
   const fullCommitSha = prInfo.commitSha || '';
   const shortSha = fullCommitSha ? fullCommitSha.substring(0, 7) : '';
-  const commitDisplay = shortSha ? ` (${shortSha})` : '';
 
   // Handle case with no changes
   if (!diffOutput || diffOutput.trim().length === 0) {
-    return `## Gas Report
-
-No gas usage changes detected between \`${baseBranch}\` and \`${headBranch}\`.
-
-All functions maintain the same gas costs. ✅
-
-*Last updated: ${new Date().toUTCString()}* for commit [\`${shortSha || 'unknown'}\`](https://github.com/${process.env.GITHUB_REPOSITORY || 'owner/repo'}/commit/${fullCommitSha})`;
+    return generateNoChangesReport(baseBranch, headBranch, shortSha, fullCommitSha);
   }
 
   // Parse and analyze changes
@@ -156,19 +197,13 @@ All functions maintain the same gas costs. ✅
 
   // If no changes were parsed but there was diff output, it might be an error or unrecognized format
   if (changes.length === 0) {
-    return `## Gas Report
-
-No gas usage changes detected between \`${baseBranch}\` and \`${headBranch}\`.
-
-All functions maintain the same gas costs. ✅
-
-*Last updated: ${new Date().toUTCString()}* for commit [\`${shortSha || 'unknown'}\`](https://github.com/${process.env.GITHUB_REPOSITORY || 'owner/repo'}/commit/${fullCommitSha})`;
+    return generateNoChangesReport(baseBranch, headBranch, shortSha, fullCommitSha);
   }
 
   const summary = generateSummary(changes);
   const table = generateMarkdownTable(changes);
 
-  return `## Gas Report
+  return `## 📊 Gas Report
 
 Comparing gas usage between \`${baseBranch}\` and \`${headBranch}\`
 
@@ -190,27 +225,9 @@ ${generateMarkdownTable(changes, changes.length)}
 </details>
 ` : ''}
 
-<details>
-<summary>ℹ️ About this report</summary>
+${generateAboutSection()}
 
-This report compares gas usage between the base branch and this PR using \`forge snapshot\`.
-- 🟢 indicates a gas improvement (reduction)
-- 🔴 indicates a gas regression (increase)
-- Functions not shown have unchanged gas costs
-
-To run this locally:
-\`\`\`bash
-# Generate snapshot for current branch
-forge snapshot
-
-# Compare with another branch
-git checkout main
-forge snapshot --diff .gas-snapshot
-\`\`\`
-
-</details>
-
-*Last updated: ${new Date().toUTCString()}* for commit [\`${shortSha || 'unknown'}\`](https://github.com/${process.env.GITHUB_REPOSITORY || 'owner/repo'}/commit/${fullCommitSha})`;
+${generateFooter(shortSha, fullCommitSha)}`;
 }
 
 /**
@@ -263,5 +280,8 @@ module.exports = {
   generateSummary,
   generateFullReport,
   formatGasValue,
-  calculatePercentageChange
+  calculatePercentageChange,
+  generateFooter,
+  generateNoChangesReport,
+  generateAboutSection
 };
