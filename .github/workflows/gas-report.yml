@@ -49,8 +49,8 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          # Run diff and capture output
-          forge snapshot --diff .gas-snapshot-base --snap .gas-snapshot-pr > gas-diff.txt 2>&1 || true
+          # Run diff and capture output (compares current PR state to base snapshot)
+          forge snapshot --diff .gas-snapshot-base > gas-diff.txt 2>&1 || true
 
           # Generate the formatted report
           node .github/scripts/gas-report.js generate
