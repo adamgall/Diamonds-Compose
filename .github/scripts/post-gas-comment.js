@@ -42,7 +42,7 @@ module.exports = async ({ github, context }) => {
     context,
     prNumber,
     body,
-    '📊 Gas Report',
+    '## Gas Report',
     'gas report'
   );
 };
