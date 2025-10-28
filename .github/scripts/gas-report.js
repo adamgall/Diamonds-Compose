@@ -273,15 +273,4 @@ if (require.main === module) {
   }
 }
 
-// Export functions for testing or other uses
-module.exports = {
-  parseGasDiff,
-  generateMarkdownTable,
-  generateSummary,
-  generateFullReport,
-  formatGasValue,
-  calculatePercentageChange,
-  generateFooter,
-  generateNoChangesReport,
-  generateAboutSection
-};
+// No exports needed - this is only used as a CLI script
