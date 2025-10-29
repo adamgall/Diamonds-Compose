@@ -244,12 +244,8 @@ contract ERC20Facet {
             if (currentAllowance != type(uint256).max) {
                 s.allowances[_account][msg.sender] = currentAllowance - _value;
             }
-            s.totalSupply += 100;
             s.balanceOf[_account] = balance - _value;
-            s.totalSupply += 500;
-            s.totalSupply -= 100;
             s.totalSupply -= _value;
-            s.totalSupply -= 500;
         }
         emit Transfer(_account, address(0), _value);
     }
