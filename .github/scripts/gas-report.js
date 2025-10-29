@@ -17,8 +17,6 @@ function parseGasDiff(diffOutput) {
   const lines = diffOutput.split('\n').filter(line => line.trim());
   const changes = [];
 
-  console.log('Parsing gas diff output, total lines:', lines.length);
-
   for (const line of lines) {
     // Skip lines until we find the actual diff output
     // Look for lines like: test_FunctionName() (gas: -123 (-1.23%))
@@ -35,8 +33,6 @@ function parseGasDiff(diffOutput) {
       // Skip zero changes
       if (gasChange === 0) continue;
 
-      console.log(`Found change: ${funcName} -> ${gasChange}`);
-
       changes.push({
         type: gasChange < 0 ? 'improvement' : 'regression',
         contract: 'Test', // We don't have contract names in this format
@@ -48,7 +44,6 @@ function parseGasDiff(diffOutput) {
     }
   }
 
-  console.log('Total changes found:', changes.length);
   return changes;
 }
 

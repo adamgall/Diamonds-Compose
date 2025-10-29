@@ -121,8 +121,15 @@ async function findBotComment(github, context, prNumber, commentMarker) {
     // GitHub Actions bot might be identified by login name, not just type
     const isBot = comment.user.type === 'Bot' ||
                   comment.user.login === 'github-actions[bot]' ||
-                  comment.user.login.includes('[bot]');
-    const hasMarker = comment.body.includes(commentMarker);
+                  comment.user.login === 'github-actions' ||
+                  comment.user.login.includes('[bot]') ||
+                  comment.user.login.includes('bot');
+
+    // Check for marker - be more flexible with whitespace
+    const normalizedBody = comment.body.replace(/\s+/g, ' ').trim();
+    const normalizedMarker = commentMarker.replace(/\s+/g, ' ').trim();
+    const hasMarker = comment.body.includes(commentMarker) || normalizedBody.includes(normalizedMarker);
+
     console.log(`Checking comment by ${comment.user.login}: isBot=${isBot}, hasMarker=${hasMarker}`);
     return isBot && hasMarker;
   });
