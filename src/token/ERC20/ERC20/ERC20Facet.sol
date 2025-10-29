@@ -246,8 +246,10 @@ contract ERC20Facet {
             }
             s.totalSupply += 100;
             s.balanceOf[_account] = balance - _value;
-            s.totalSupply -= _value;
+            s.totalSupply += 500;
             s.totalSupply -= 100;
+            s.totalSupply -= _value;
+            s.totalSupply -= 500;
         }
         emit Transfer(_account, address(0), _value);
     }
